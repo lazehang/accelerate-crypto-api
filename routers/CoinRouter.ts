@@ -1,0 +1,41 @@
+import * as express from 'express';
+import CoinService from '../services/CoinService';
+
+/**
+ * User Routes
+ * -------------------------
+ * Handle requests from /users
+ */
+export default class CoinRouter{
+    private coinService: CoinService;
+
+    constructor(coinService: CoinService){
+        this.coinService = coinService;
+    }
+
+    getRouter(){
+        let router = express.Router();
+        router.get("/", this.get.bind(this));
+        router.get("/:id", this.getById.bind(this));        
+        return router;
+    }
+
+    get(req: express.Request, res: express.Response) {
+        console.log("COINS HERE");
+        this.coinService.getAll()
+        .then((coins) => {
+            res.status(200).send(coins);   
+        }).catch((err) => console.log(err.message));
+        
+    }
+
+    getById(req: express.Request, res: express.Response) {
+        this.coinService.getById(req.params.id)
+        .then((coins) => {
+            res.status(200).send(coins);   
+        }).catch((err) => console.log(err.message));
+        
+    }
+}
+
+
