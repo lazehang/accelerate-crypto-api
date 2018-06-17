@@ -2,9 +2,9 @@ import * as express from 'express';
 import CoinService from '../services/CoinService';
 
 /**
- * User Routes
+ * Coin Routes
  * -------------------------
- * Handle requests from /users
+ * Handle requests from /coins
  */
 export default class CoinRouter{
     private coinService: CoinService;
@@ -16,7 +16,8 @@ export default class CoinRouter{
     getRouter(){
         let router = express.Router();
         router.get("/", this.get.bind(this));
-        router.get("/:id", this.getById.bind(this));        
+        router.get("/price/:id", this.getPrice.bind(this));                        
+        router.get("/:id", this.getById.bind(this)); 
         return router;
     }
 
@@ -35,6 +36,13 @@ export default class CoinRouter{
             res.status(200).send(coins);   
         }).catch((err) => console.log(err.message));
         
+    }
+
+    getPrice(req: express.Request, res: express.Response) {
+        this.coinService.getPriceById(req.params.id).then((data) => {
+            console.log(data);
+            res.status(200).json(data);
+        });
     }
 }
 

@@ -38,7 +38,12 @@ export default class UserService {
                                     isAdmin: isAdmin
                                 };
 
-                                this.knex('users').insert(newUser).then((newuser) => {
+                                this.knex('users').returning('id').insert(newUser).then((id) => {
+                                    const newUserId = parseInt(id);
+                                    this.knex('accounts').insert({
+                                        user_id: newUserId
+                                    })
+                                    .then(() => {
                                     this.knex('users').where({ username: newUser.username }).first().then((user) => {
                                         resolve( {
                                             id: user.id,
@@ -46,6 +51,7 @@ export default class UserService {
                                             name: user.name
                                         });
                                     })
+                                });
                                 })
                             })
                             .catch(err => console.log(err));
