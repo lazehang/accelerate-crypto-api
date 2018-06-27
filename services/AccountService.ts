@@ -15,19 +15,23 @@ export default class AccountService {
     }
 
     getBalance(userId: number) {
-        return this.knex('accounts').select('amount').where('user_id', '=', userId);
+        return this.knex('accounts').select('amount').where('user_id', '=', userId).first();
     }
 
     isSufficient(user_id: number, buyingAmount: number) {
-        this.getBalance(user_id).then((amount) => {
+        return this.getBalance(user_id).then((amount) => {
             return amount >= buyingAmount;
         })
     }
 
     buy(user_id: number, buyingAmount: number) {
-        if (this.isSufficient(user_id, buyingAmount)) {
-            return this.knex('accounts').decrement('amount', buyingAmount).returning('id');
-        }
+        return this.isSufficient(user_id, buyingAmount).then((data) => {
+            if (data) {
+            return this.knex('accounts').decrement('amount', buyingAmount).where("user_id", "=", user_id).returning('id');
+            } else {
+                throw new Error("Not Enough Balance");
+            }
+        });
     }
 
     sell(user_id: number, sellingAmount: number) {

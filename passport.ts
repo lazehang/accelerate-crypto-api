@@ -3,11 +3,20 @@ import config from './config';
 import { Strategy as LocalStrategy } from 'passport-local';
 import UserService from './services/UserService';
 import { ClassElement } from 'typescript';
+import CoinService from './services/CoinService';
+import * as redis from 'redis';
+
 const knexConfig = require('./knexfile')[config.env || 'staging'];
 const knex = require('knex')(knexConfig);
 const bcrypt = require('./util/bcrypt');
 
-const userService = new UserService(knex);
+const client = redis.createClient({
+    host: 'localhost',
+    port: 6379
+});
+
+const coinService = new CoinService(client, knex);
+const userService = new UserService(knex, coinService);
 
 module.exports = (app) => {
 

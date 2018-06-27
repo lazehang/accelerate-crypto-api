@@ -13,6 +13,7 @@ import AccountService from './services/AccountService';
 
 import * as redis from 'redis';
 
+
 const redisClient = redis.createClient({
     host: "localhost",
     port: 6379
@@ -22,20 +23,32 @@ require('dotenv').config;
 
 const knex = Knex(Knexfile[process.env.ENV]);
 const app = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-const userService = new UserService(knex);
+const coinService = new CoinService(redisClient, knex);
+const userService = new UserService(knex, coinService);
 const jwtAuth = jwtStrategy(userService);
-const coinService = new CoinService(redisClient);
 const accountService = new AccountService(knex);
 const apiRouter = new ApiRouter(jwtAuth, userService, coinService, accountService);
 
 const passport = require("./passport")(app);
-
+app.set('socketio', io);
 app.use(bodyParser());
 app.use(cors());
 app.use(jwtAuth.initialize());
 app.use("/api", apiRouter.getRouter());
 
-app.listen(process.env.PORT,() => {
+io.on('connection', function(socket){
+    console.log("Socket connected: " + socket.id);
+        setInterval(() => {
+            coinService.getAll().then((coins) => {            
+                socket.emit('action', {type: 'SOCKET_UPDATE_COINS', coins: coins})
+            }).catch((err) => console.log(err.message))
+        }, 80000);     
+        
+  });
+     
+http.listen(process.env.PORT,() => {
     console.log(`Application started at port: ${process.env.PORT}`);
 });

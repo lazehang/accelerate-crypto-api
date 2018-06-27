@@ -1,6 +1,7 @@
 import * as express from 'express';
 import AccountService from '../services/AccountService';
 import CoinService from '../services/CoinService';
+import { resolveSoa } from 'dns';
 
 /**
  * Transaction Routes
@@ -25,22 +26,46 @@ export default class TransactionRouter{
     }
 
     buy(req: express.Request, res: express.Response) {
-        this.accountService.buy(req.user.id, req.body.amount).then((data) => {
-            this.coinService.add(req.body.coinId, req.body.coinQuantiy, req.body.id);
-            res.json("Buy"); 
-        })
+    
+       return this.accountService.buy(req.user.id, req.body.amount).then((data) => {
+            if (data) {
+                this.coinService.add(req.body.coin_id, req.body.coinQuantity, req.user.id);
+                var io = req.app.get('socketio');
+
+                this.accountService.getBalance(req.user.id).then((account) => {
+                    console.log(account);
+                    io.emit('action', {type: 'SOCKET_UPDATE_BALANCE', account});    
+                })
+
+                res.json(data); 
+            }else {
+                res.status(500).json("Error !!")
+            }
+            
+        }).catch((err) => res.status(500).json(err.message))
     }
 
     sell(req: express.Request, res: express.Response) {
-        res.json("Sell");
+        return this.accountService.sell(req.user.id, req.body.amount)
+                .then((data) => {
+                    this.coinService.deduct(req.body.coin_id, req.body.coinQuantity, req.user.id);
+                        var io = req.app.get('socketio');
+
+                        this.accountService.getBalance(req.user.id).then((account) => {
+                            console.log(account);
+                            io.emit('action', {type: 'SOCKET_UPDATE_BALANCE', account});    
+                        })
+                })
                 
     }
 
     getReady(req: express.Request, res: express.Response) {
-        this.coinService.convert(req.body.amount, req.body.coinId, req.user.id)
+        console.log(req.user.id);
+        this.coinService.convert(req.body.amount, req.body.coin_id, req.user.id)
         .then((coinDetail) => {
-            console.log(coinDetail);
             res.json(coinDetail);
+        }).catch((err) => {
+            res.status(400).json(err);
         })
         
     }

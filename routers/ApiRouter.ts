@@ -29,7 +29,7 @@ export default class ApiRouter{
     getRouter() {
         const router = express.Router();
         const authRouter  = new AuthRouter(this.userService);
-        const userRouter  = new UserRouter(this.userService);
+        const userRouter  = new UserRouter(this.userService, this.accountService);
         const coinRouter = new CoinRouter(this.coinService);
         const transactionRouter = new TransactionRouter(this.accountService, this.coinService);
         

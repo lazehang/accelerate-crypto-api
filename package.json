@@ -13,6 +13,7 @@
         "@types/bcrypt": "^2.0.0",
         "@types/passport-local": "^1.0.33",
         "@types/redis": "^2.8.6",
+        "@types/socket.io": "^1.4.36",
         "axios": "^0.18.0",
         "bcrypt": "^2.0.1",
         "body-parser": "^1.18.2",
@@ -26,7 +27,8 @@
         "passport-jwt": "^4.0.0",
         "passport-local": "^1.0.0",
         "pg": "^7.4.1",
-        "redis": "^2.8.0"
+        "redis": "^2.8.0",
+        "socket.io": "^2.1.1"
     },
     "devDependencies": {
         "@types/axios": "^0.14.0",

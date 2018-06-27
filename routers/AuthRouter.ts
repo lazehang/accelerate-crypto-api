@@ -73,6 +73,7 @@ export default class AuthRouter{
     }
 
     register(req: express.Request, res: express.Response) {
+        console.log(req.body.username, req.body.name, req.body.password)
         this.userService.register(req.body.username, req.body.name, req.body.password, req.body.isAdmin ? req.body.isAdmin:false).then((user) => {
             res.status(200).json(user);
         })

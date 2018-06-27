@@ -22,10 +22,11 @@ export default class CoinRouter{
     }
 
     get(req: express.Request, res: express.Response) {
+
         console.log("COINS HERE");
         this.coinService.getAll()
         .then((coins) => {
-            res.status(200).send(coins);   
+            res.status(200).json(coins);   
         }).catch((err) => console.log(err.message));
         
     }

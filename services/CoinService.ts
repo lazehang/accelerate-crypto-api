@@ -27,17 +27,71 @@ export default class CoinService {
             axios.get(`${process.env.COINBASE_API_SERVER}ticker/?convert=HKD`)
             .then((resp) => {
                 Object.keys(resp.data["data"]).forEach((key, val) => {
-                    soldOut.forEach((sold) => {
-                        if (parseInt(key) === sold.coin_id) {
-                            const coinId = parseInt(key);
-                            resp.data["data"][coinId].soldOut = true;
-                        }
-                    })
-                resolve(resp.data["data"]);
+                    const coinId = parseInt(key);
                     
+                    // this.storeHistory(parseInt(key), resp.data["data"][key].quotes.HKD.price.toString());
+                    
+                    // this.knex('coin_history')
+                    // .select('prices')
+                    // .where('coin_id', '=', coinId)
+                    // .then((row) => {
+                        // if (typeof row[0] !== 'undefined' && row[0]) {
+                        //     let prices = row[0].prices.split(",");
+                        //     resp.data["data"][coinId].history = prices;
+                            soldOut.forEach((sold) => {
+                                if (coinId === sold.coin_id) {
+                                    resp.data["data"][coinId].soldOut = true;
+                                }
+                            }) 
+
+                            this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
+                        // }
+                        resolve(resp.data["data"]);
+                    // });
+                                               
                 })
-            }).catch(err => reject(err));
+
+                
+            }).catch(err => {
+                this.redisClient.get("backup_coins" , (err, data) => {
+                    if (err) {
+                        reject(err)                        
+                    } else {
+                        resolve(JSON.parse(data));
+                    }
+                })
+            });
         });
+    }
+
+    storeHistory(coinId: number, price: string) {
+        this.knex('coin_history').select('prices').where('coin_id', '=', coinId).then((row) => {
+            let prices;
+            if (row.length > 0) {
+                prices = row[0].prices.split(",");
+                console.log(prices.length);
+                if (prices.length >= 5) {
+                    prices.shift();
+                    prices.push(price);
+                } else {
+                    prices.push(price)
+                }
+                prices =prices.join(",");
+
+                return this.knex('coin_history').where({
+                    coin_id: coinId
+                }).update({
+                    prices: prices
+                })
+                
+            } else {
+                return this.knex('coin_history').insert({
+                    coin_id: coinId,
+                    prices: price
+                })
+            }
+            
+        })
     }
 
     getById(id: number) {
@@ -76,46 +130,85 @@ export default class CoinService {
         }).catch((err) => console.log(err.message));
     }
 
-    storeCoinPrice(coinId, userID) {
+    storeCoinPrice(coinId, userId) {
         return this.getPriceById(coinId).then((prices) => {
-            const key = coinId.toString()+"_"+userID.toString();
+            console.log(coinId, userId);
+            const key = coinId.toString()+"_"+userId.toString();
             const price = JSON.stringify(prices['prices']["HKD"]["price"]);
             console.log(key);           
             this.redisClient.set(key, price);
-        });
+        }).catch((err) => console.log(err.message));
     }
 
-    convert(amount: number, coinId: number, userID: number) {
-        this.storeCoinPrice(coinId, userID);
-
+    convert(amount: number, coinId: number, userId: number) {
         return new Promise((resolve, reject) => {
-            this.redisClient.get(coinId.toString()+"_"+userID.toString(), (err, data) => {
+            this.storeCoinPrice(coinId, userId).then((resp) => {
+            const key = coinId.toString()+"_"+userId.toString();
+            
+            this.redisClient.get(key, (err, data) => {
+                if (err) {
+                    reject(err);
+                }
                 const coinDetail = {
                     coinQuantity: amount/parseInt(data),
                     price: parseInt(data)
                 }
                 resolve(coinDetail);
             });
-        });
-        
-        
-        // return this.getPriceById(coinId).then((prices) => {
-        //     return amount/(prices['prices']['HKD'].price);      
-        // }).catch((err) => console.log(err.message));
+      
+        }).catch((err) => reject(err))  
+    });    
     }
 
     add(coin_id, quantity, userId) {
-        this.knex('user_cryptos').select('coin_id').where('coin_id', '=', coin_id).then((row) => {
-            if (row !== null) {
-                this.knex('user_cryptos').increment('quantity', quantity).where('coin_id', '=', coin_id)
-            } else {
-                this.knex('user_cryptos').insert({
+        this.knex('user_cryptos')
+        .select('*')
+        .where({
+            crypto_id: coin_id,
+            user_id: userId
+        }).then((row) => {
+            console.log(row);
+            if (row === undefined || row.length == 0) {
+                return this.knex('user_cryptos').insert({
                     user_id: userId,
-                    coin_id: coin_id,
+                    crypto_id: coin_id,
                     quantity: quantity
-                })
+                });
+            } else {
+                console.log("increasing");
+                return this.knex.raw('UPDATE user_cryptos SET quantity = quantity + :quantity WHERE user_id = :user_id AND crypto_id = :coin_id', {
+                    quantity: quantity,
+                    user_id: userId,
+                    coin_id: coin_id
+                }).catch(function(err){
+                    throw err;
+                });
             }
-        })
-        
+        }).catch(err => console.log(err.message))
+    }
+
+    deduct(coin_id, quantity, userId) {
+        this.knex('user_cryptos')
+        .select('*')
+        .where({
+            crypto_id: coin_id,
+            user_id: userId
+        }).then((row) => {
+            console.log(row);
+            if (row === undefined || row.length == 0 || row[0].quantity < quantity) {
+                return {
+                    error: "Insufficient Coins"
+                }
+            } else {
+                console.log("deducting");
+                return this.knex.raw('UPDATE user_cryptos SET quantity = quantity - :quantity WHERE user_id = :user_id AND crypto_id = :coin_id', {
+                    quantity: parseInt(quantity),
+                    user_id: userId,
+                    coin_id: parseInt(coin_id)
+                }).catch(function(err){
+                    throw err;
+                });
+            }
+        }).catch(err => console.log(err.message))
     }
 }
