@@ -207,7 +207,7 @@ export default class CoinService {
                     coin_id: parseInt(coin_id)
                 }).catch(function(err){
                     throw err;
-                });
+                });   
             }
         }).catch(err => console.log(err.message))
     }
