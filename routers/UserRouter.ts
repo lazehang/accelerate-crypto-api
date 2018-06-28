@@ -22,7 +22,7 @@ export default class UserRouter{
         router.get("/user", this.getUser.bind(this));
         router.get("/account", this.getAccount.bind(this));
         router.get("/coins", this.getCoins.bind(this));
-        
+        router.get("/log", this.getTransaction.bind(this));
         return router;
     }
 
@@ -38,8 +38,18 @@ export default class UserRouter{
 
     getCoins(req: express.Request, res: express.Response) {
         return this.userService.getUserCoins(req.user.id).then((coins) => {
-                res.json(coins);
+                if (coins) {
+                    res.json(coins); 
+                } else {
+                    res.json(null)
+                }
         });
+    }
+
+    getTransaction(req: express.Request, res: express.Response){
+        return this.accountService.getUserTransaction(req.user.id).then((data) => {
+            res.json(data);
+        })
     }
 
     getUser(req: express.Request, res: express.Response) {

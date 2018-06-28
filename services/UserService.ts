@@ -95,8 +95,9 @@ export default class UserService {
                         
                     })          
                     resolve(userCryptos);
-                })      
-                
+                })    
+            } else {
+                resolve(null);
             }
         }).catch((err) => reject(err));
     })

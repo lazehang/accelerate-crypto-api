@@ -35,18 +35,19 @@ export default class CoinService {
                     // .select('prices')
                     // .where('coin_id', '=', coinId)
                     // .then((row) => {
-                        // if (typeof row[0] !== 'undefined' && row[0]) {
-                        //     let prices = row[0].prices.split(",");
-                        //     resp.data["data"][coinId].history = prices;
-                            soldOut.forEach((sold) => {
-                                if (coinId === sold.coin_id) {
-                                    resp.data["data"][coinId].soldOut = true;
-                                }
-                            }) 
-
-                            this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
+                    //     if (typeof row[0] !== 'undefined' && row[0]) {
+                    //         let prices = row[0].prices.split(",");
+                    //         resp.data["data"][coinId].history = prices;
+                        
+                        this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
                         // }
-                        resolve(resp.data["data"]);
+                        this.redisClient.get("backup_coins" , (err, data) => {
+                            if (err) {
+                                reject(err)                        
+                            } else {
+                                resolve(JSON.parse(data));
+                            }
+                        })
                     // });
                                                
                 })
@@ -65,24 +66,33 @@ export default class CoinService {
     }
 
     storeHistory(coinId: number, price: string) {
-        this.knex('coin_history').select('prices').where('coin_id', '=', coinId).then((row) => {
+        this.knex('coin_history').select('*').where('coin_id', '=', coinId).then((row) => {
             let prices;
             if (row.length > 0) {
-                prices = row[0].prices.split(",");
-                console.log(prices.length);
-                if (prices.length >= 5) {
-                    prices.shift();
-                    prices.push(price);
-                } else {
-                    prices.push(price)
-                }
-                prices =prices.join(",");
+                const last_updated = row[0].updated_at;
+            
+                const converted_last_updated = new Date(last_updated).getTime();
+                const today = Date.now();
 
-                return this.knex('coin_history').where({
-                    coin_id: coinId
-                }).update({
-                    prices: prices
-                })
+                if ((today - last_updated) < 86400) {
+                    prices = row[0].prices.split(",");
+                        console.log(prices.length);
+                        if (prices.length >= 5) {
+                            prices.shift();
+                            prices.push(price);
+                        } else {
+                            prices.push(price)
+                        }
+                        prices =prices.join(",");
+
+                        return this.knex('coin_history').where({
+                            coin_id: coinId
+                        }).update({
+                            prices: prices
+                        })
+                }
+
+                return null;  
                 
             } else {
                 return this.knex('coin_history').insert({
@@ -149,10 +159,16 @@ export default class CoinService {
                 if (err) {
                     reject(err);
                 }
-                const coinDetail = {
-                    coinQuantity: amount/parseInt(data),
-                    price: parseInt(data)
+                let rate = parseFloat(data)
+                if (rate < 0) {
+                    rate = Math.round(rate * 100) / 100
                 }
+                console.log("RATE : "+rate);
+                const coinDetail = {
+                    coinQuantity: amount/rate,
+                    price: rate
+                }
+                console.log(coinDetail);
                 resolve(coinDetail);
             });
       

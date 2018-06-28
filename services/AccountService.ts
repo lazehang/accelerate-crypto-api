@@ -24,6 +24,21 @@ export default class AccountService {
         })
     }
 
+    addTransaction(user_id: number, coin_id: number, coinQuantity: number, amount: number) {
+        const rate = amount/coinQuantity
+        console.log(rate);
+        return this.knex("transaction").insert({
+            user_id: user_id,
+            coin_id: coin_id,
+            amount: amount,
+            rate: rate
+        }).returning('user_id');
+    }
+
+    getUserTransaction(user_id: number) {
+        return this.knex("transaction").select('*').where('user_id', '=', user_id);
+    }
+
     buy(user_id: number, buyingAmount: number) {
         return this.isSufficient(user_id, buyingAmount).then((data) => {
             if (data) {
