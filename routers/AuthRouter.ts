@@ -50,7 +50,7 @@ export default class AuthRouter{
     login(req: express.Request, res: express.Response, next: express.NextFunction) {
         passport.authenticate('local-login', { session: false }, (err, user, info) => {
             if (err || !user) {
-                return res.status(400).json({
+                return res.json({
                     message: 'Something is not right',
                     user: user
                 });
