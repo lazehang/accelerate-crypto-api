@@ -48,7 +48,9 @@ export default class UserRouter{
 
     getTransaction(req: express.Request, res: express.Response){
         return this.accountService.getUserTransaction(req.user.id).then((data) => {
-            res.json(data);
+                res.json(data);
+        }).catch((err) => {
+            res.json(err);
         })
     }
 

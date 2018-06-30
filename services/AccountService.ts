@@ -24,14 +24,15 @@ export default class AccountService {
         })
     }
 
-    addTransaction(user_id: number, coin_id: number, coinQuantity: number, amount: number) {
+    addTransaction(user_id: number, coin_id: number, coinQuantity: number, amount: number, type: string) {
         const rate = amount/coinQuantity
         console.log(rate);
         return this.knex("transaction").insert({
             user_id: user_id,
             coin_id: coin_id,
             amount: amount,
-            rate: rate
+            rate: rate,
+            type: type
         }).returning('user_id');
     }
 

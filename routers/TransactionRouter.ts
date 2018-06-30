@@ -17,6 +17,7 @@ export default class TransactionRouter{
         this.coinService = coinService;
     }
 
+
     getRouter(){
         let router = express.Router();
         router.post("/ready", this.getReady.bind(this));
@@ -30,7 +31,7 @@ export default class TransactionRouter{
        return this.accountService.buy(req.user.id, req.body.amount).then((data) => {
             if (data) {
                 this.coinService.add(req.body.coin_id, req.body.coinQuantity, req.user.id);
-                this.accountService.addTransaction(req.user.id, req.body.coin_id, req.body.coinQuantity, parseInt(req.body.amount)).then((resp) => {
+                this.accountService.addTransaction(req.user.id, req.body.coin_id, req.body.coinQuantity, parseInt(req.body.amount), "buy").then((resp) => {
                     console.log(resp);
                 }).catch((err)=> console.log(err));
 
@@ -53,10 +54,10 @@ export default class TransactionRouter{
         return this.accountService.sell(req.user.id, req.body.amount)
                 .then((data) => {
                     this.coinService.deduct(req.body.coin_id, req.body.coinQuantity, req.user.id);
-                    this.accountService.addTransaction(req.user.id, req.body.coin_id, req.body.coinQuantity, parseInt(req.body.amount)).then((resp) => {
+                    this.accountService.addTransaction(req.user.id, req.body.coin_id, req.body.coinQuantity, parseInt(req.body.amount), "sell").then((resp) => {
                         console.log(resp);
                     }).catch((err)=> console.log(err));
-                    
+
                         var io = req.app.get('socketio');
 
                         this.accountService.getBalance(req.user.id).then((account) => {
