@@ -78,21 +78,23 @@ export default class UserRouter{
             const current_balance = data.amount;
             
             this.userService.getUserCoins(req.user.id).then((coins) => {
+                let liquid_asset = 0;
+                
                 if (coins) {
-                    let liquid_asset = 0;
                     Object.keys(coins).map((k, v) => {
                         liquid_asset =+ coins[k].quotes.HKD.price * coins[k].quantity;
                     })
-
-                    const total_diff = (current_balance + liquid_asset) - 100000;
                     
-                    const status = Math.round(total_diff/10)/100;
-
-
-                    res.json({
-                        status: status 
-                    })
                 } 
+
+                const total_diff = (current_balance + liquid_asset) - 100000;
+                    
+                const status = Math.round(total_diff/10)/100;
+
+
+                res.json({
+                    status: status 
+                })
             });
         })
          
