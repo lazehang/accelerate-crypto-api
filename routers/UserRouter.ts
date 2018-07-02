@@ -23,6 +23,7 @@ export default class UserRouter{
         router.get("/account", this.getAccount.bind(this));
         router.get("/coins", this.getCoins.bind(this));
         router.get("/log", this.getTransaction.bind(this));
+        router.get("/status", this.getUserStatus.bind(this));
         return router;
     }
 
@@ -70,6 +71,31 @@ export default class UserRouter{
         return this.accountService.getBalance(req.user.id).then((data) => {
             res.json(data);
         })
+    }
+
+    getUserStatus(req: express.Request, res: express.Response) {
+        return this.accountService.getBalance(req.user.id).then((data) => {
+            const current_balance = data.amount;
+            
+            this.userService.getUserCoins(req.user.id).then((coins) => {
+                if (coins) {
+                    let liquid_asset = 0;
+                    Object.keys(coins).map((k, v) => {
+                        liquid_asset =+ coins[k].quotes.HKD.price * coins[k].quantity;
+                    })
+
+                    const total_diff = (current_balance + liquid_asset) - 100000;
+                    
+                    const status = Math.round(total_diff/10)/100;
+
+
+                    res.json({
+                        status: status 
+                    })
+                } 
+            });
+        })
+         
     }
 }
 

@@ -39,6 +39,10 @@ app.use(cors());
 app.use(jwtAuth.initialize());
 app.use("/api", apiRouter.getRouter());
 
+app.get("/", (req: express.Request, res: express.Response) => {
+    res.send("This is owned by Laze Hang ( Mangal Hang Limbu)");
+})
+
 io.on('connection', function(socket){
     console.log("Socket connected: " + socket.id);
         setInterval(() => {
