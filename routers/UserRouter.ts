@@ -83,8 +83,7 @@ export default class UserRouter{
                 if (coins) {
                     Object.keys(coins).map((k, v) => {
                         liquid_asset =+ coins[k].quotes.HKD.price * coins[k].quantity;
-                    })
-                    
+                    })  
                 } 
 
                 const total_diff = (current_balance + liquid_asset) - 100000;

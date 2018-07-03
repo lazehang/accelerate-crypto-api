@@ -29,27 +29,15 @@ export default class CoinService {
                 Object.keys(resp.data["data"]).forEach((key, val) => {
                     const coinId = parseInt(key);
                     
-                    // this.storeHistory(parseInt(key), resp.data["data"][key].quotes.HKD.price.toString());
-                    
-                    // this.knex('coin_history')
-                    // .select('prices')
-                    // .where('coin_id', '=', coinId)
-                    // .then((row) => {
-                    //     if (typeof row[0] !== 'undefined' && row[0]) {
-                    //         let prices = row[0].prices.split(",");
-                    //         resp.data["data"][coinId].history = prices;
-                        
                         this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
-                        // }
+      
                         this.redisClient.get("backup_coins" , (err, data) => {
                             if (err) {
                                 reject(err)                        
                             } else {
                                 resolve(JSON.parse(data));
                             }
-                        })
-                    // });
-                                               
+                        })                                               
                 })
 
                 
