@@ -17,7 +17,6 @@ export default class TransactionRouter{
         this.coinService = coinService;
     }
 
-
     getRouter(){
         let router = express.Router();
         router.post("/ready", this.getReady.bind(this));
