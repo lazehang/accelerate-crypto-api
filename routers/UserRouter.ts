@@ -19,11 +19,11 @@ export default class UserRouter{
     getRouter(){
         let router = express.Router();
         router.get("/", this.get.bind(this));
-        router.get("/user", this.getUser.bind(this));
-        router.get("/account", this.getAccount.bind(this));
-        router.get("/coins", this.getCoins.bind(this));
-        router.get("/log", this.getTransaction.bind(this));
-        router.get("/status", this.getUserStatus.bind(this));
+        router.get("/user/:id", this.getUser.bind(this));
+        router.get("/account/:id", this.getAccount.bind(this));
+        router.get("/coins/:id", this.getCoins.bind(this));
+        router.get("/log/:id", this.getTransaction.bind(this));
+        router.get("/status/:id", this.getUserStatus.bind(this));
         return router;
     }
 
@@ -38,7 +38,7 @@ export default class UserRouter{
     }
 
     getCoins(req: express.Request, res: express.Response) {
-        return this.userService.getUserCoins(req.user.id).then((coins) => {
+        return this.userService.getUserCoins(parseInt(req.params.id)).then((coins) => {
                 if (coins) {
                     res.json(coins); 
                 } else {
@@ -48,7 +48,7 @@ export default class UserRouter{
     }
 
     getTransaction(req: express.Request, res: express.Response){
-        return this.accountService.getUserTransaction(req.user.id).then((data) => {
+        return this.accountService.getUserTransaction(parseInt(req.params.id)).then((data) => {
                 res.json(data);
         }).catch((err) => {
             res.json(err);
@@ -56,7 +56,7 @@ export default class UserRouter{
     }
 
     getUser(req: express.Request, res: express.Response) {
-        return this.userService.findById(req.user.id).then((user) => {
+        return this.userService.findById(parseInt(req.params.id)).then((user) => {
             res.json({
                 user_id: user.id,
                 name: user.name,
@@ -68,16 +68,17 @@ export default class UserRouter{
     }
 
     getAccount(req: express.Request, res: express.Response) {
-        return this.accountService.getBalance(req.user.id).then((data) => {
+        return this.accountService.getBalance(parseInt(req.params.id)).then((data) => {
             res.json(data);
         })
     }
 
     getUserStatus(req: express.Request, res: express.Response) {
-        return this.accountService.getBalance(req.user.id).then((data) => {
+        return this.accountService.getBalance(parseInt(req.params.id)).then((data) => {
+            console.log(data);
             const current_balance = data.amount;
             
-            this.userService.getUserCoins(req.user.id).then((coins) => {
+            this.userService.getUserCoins(parseInt(req.params.id)).then((coins) => {
                 let liquid_asset = 0;
                 
                 if (coins) {

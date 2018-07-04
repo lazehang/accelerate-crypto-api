@@ -46,10 +46,12 @@ app.get("/", (req: express.Request, res: express.Response) => {
 io.on('connection', function(socket){
     console.log("Socket connected: " + socket.id);
         setInterval(() => {
-            coinService.getAll().then((coins) => {            
-                socket.emit('action', {type: 'SOCKET_UPDATE_COINS', coins: coins})
+            coinService.getAll().then((data) => { 
+                coinService.getCoins().then((coins) => {
+                    socket.emit('action', {type: 'SOCKET_UPDATE_COINS', coins: coins})
+                });
             }).catch((err) => console.log(err.message))
-        }, 80000);     
+        }, 20000);     
         
   });
      

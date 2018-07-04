@@ -23,33 +23,34 @@ export default class CoinService {
     }
   
     getAll() {
-        return new Promise((resolve, reject) => {
-            axios.get(`${process.env.COINBASE_API_SERVER}ticker/?convert=HKD`)
+        return axios.get(`${process.env.COINBASE_API_SERVER}ticker/?convert=HKD`)
             .then((resp) => {
                 Object.keys(resp.data["data"]).forEach((key, val) => {
                     const coinId = parseInt(key);
                     
-                        this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
-      
-                        this.redisClient.get("backup_coins" , (err, data) => {
-                            if (err) {
-                                reject(err)                        
-                            } else {
-                                resolve(JSON.parse(data));
-                            }
-                        })                                               
+                    this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
+                                                  
                 })
 
                 
             }).catch(err => {
                 this.redisClient.get("backup_coins" , (err, data) => {
                     if (err) {
-                        reject(err)                        
-                    } else {
-                        resolve(JSON.parse(data));
-                    }
+                        console.log(err)                        
+                    }                     
                 })
             });
+    
+    }
+
+    getCoins() {
+        return  new Promise((resolve, reject) => {
+            this.redisClient.get("backup_coins" , (err, data) => {
+                if (err) {
+                    reject(err)                        
+                } 
+                resolve(JSON.parse(data));
+            })
         });
     }
 
@@ -103,7 +104,7 @@ export default class CoinService {
     
     getAllPrice() {
         return new Promise((resolve, reject) => {
-            this.getAll().then((data) => {
+            this.getCoins().then((data) => {
                 let quotes = [];
                 Object.keys(data).forEach((key, value)=>{
                     var object = {};

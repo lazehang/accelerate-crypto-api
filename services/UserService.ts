@@ -81,7 +81,7 @@ export default class UserService {
             
             if(rows.length !== 0 ) {
                 
-                this.coinService.getAll().then((data) => {
+                this.coinService.getCoins().then((data) => {
                     let userCryptos= [];
                     
                     rows.forEach((row) => {

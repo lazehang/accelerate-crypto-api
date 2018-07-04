@@ -24,7 +24,7 @@ export default class CoinRouter{
     get(req: express.Request, res: express.Response) {
 
         console.log("COINS HERE");
-        this.coinService.getAll()
+        this.coinService.getCoins()
         .then((coins) => {
             res.status(200).json(coins);   
         }).catch((err) => console.log(err.message));
