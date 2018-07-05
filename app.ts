@@ -13,7 +13,6 @@ import AccountService from './services/AccountService';
 
 import * as redis from 'redis';
 
-
 const redisClient = redis.createClient({
     host: "localhost",
     port: 6379
