@@ -51,7 +51,7 @@ io.on('connection', function(socket){
                     socket.emit('action', {type: 'SOCKET_UPDATE_COINS', coins: coins})
                 });
             }).catch((err) => console.log(err.message))
-        }, 20000);     
+        }, 40000);     
         
   });
      

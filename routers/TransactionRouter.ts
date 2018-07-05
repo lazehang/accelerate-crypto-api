@@ -60,7 +60,6 @@ export default class TransactionRouter{
                         var io = req.app.get('socketio');
 
                         this.accountService.getBalance(parseInt(req.body.id)).then((account) => {
-                            console.log(account);
                             io.emit('action', {type: 'SOCKET_UPDATE_BALANCE', account});    
                         })
                 })
