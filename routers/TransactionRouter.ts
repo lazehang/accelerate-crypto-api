@@ -1,7 +1,6 @@
 import * as express from 'express';
 import AccountService from '../services/AccountService';
 import CoinService from '../services/CoinService';
-import { resolveSoa } from 'dns';
 
 /**
  * Transaction Routes

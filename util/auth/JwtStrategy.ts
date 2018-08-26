@@ -8,7 +8,6 @@ export default function(userService: UserService){
         secretOrKey     : config.jwtSecret,
         jwtFromRequest  : PassportJWT.ExtractJwt.fromAuthHeaderAsBearerToken()
     }, async (payload, done) => { 
-        console.log("payload", payload);
         const user = await userService.findByUsername(payload.username);
         return (user) ? done(null, {id: user.id}) : done(new Error("User not found"), null);
     });

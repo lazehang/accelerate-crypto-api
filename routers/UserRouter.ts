@@ -1,6 +1,7 @@
 import * as express from 'express';
 import UserService from '../services/UserService';
 import AccountService from '../services/AccountService';
+import { stat } from 'fs';
 
 /**
  * User Routes
@@ -75,7 +76,6 @@ export default class UserRouter{
 
     getUserStatus(req: express.Request, res: express.Response) {
         return this.accountService.getBalance(parseInt(req.params.id)).then((data) => {
-            console.log(data);
             const current_balance = data.amount;
             
             this.userService.getUserCoins(parseInt(req.params.id)).then((coins) => {
@@ -83,14 +83,15 @@ export default class UserRouter{
                 
                 if (coins) {
                     Object.keys(coins).map((k, v) => {
-                        liquid_asset =+ coins[k].quotes.HKD.price * coins[k].quantity;
+                        liquid_asset += coins[k].quotes.HKD.price * coins[k].quantity;
                     })  
                 } 
-
+                console.log('liquid asset', liquid_asset)
                 const total_diff = (current_balance + liquid_asset) - 100000;
+                console.log(current_balance + liquid_asset);
                     
                 const status = Math.round(total_diff/10)/100;
-
+                console.log(status)
 
                 res.json({
                     status: status 

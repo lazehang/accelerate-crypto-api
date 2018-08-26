@@ -26,7 +26,13 @@ export default class CoinRouter{
         console.log("COINS HERE");
         this.coinService.getCoins()
         .then((coins) => {
-            res.status(200).json(coins);   
+            if (coins) {
+                res.status(200).json(coins);   
+            } else {
+                this.coinService.getAll().then((coins) => {
+                    res.status(200).json(coins);   
+                });
+            }
         }).catch((err) => console.log(err.message));
         
     }
@@ -41,7 +47,6 @@ export default class CoinRouter{
 
     getPrice(req: express.Request, res: express.Response) {
         this.coinService.getPriceById(req.params.id).then((data) => {
-            console.log(data);
             res.status(200).json(data);
         });
     }
