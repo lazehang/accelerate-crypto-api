@@ -2,7 +2,6 @@ import * as passport from 'passport';
 import config from './config';
 import { Strategy as LocalStrategy } from 'passport-local';
 import UserService from './services/UserService';
-import { ClassElement } from 'typescript';
 import CoinService from './services/CoinService';
 import * as redis from 'redis';
 

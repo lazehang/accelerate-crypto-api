@@ -27,12 +27,8 @@ export default class CoinService {
             .then((resp) => {
                 Object.keys(resp.data["data"]).forEach((key, val) => {
                     const coinId = parseInt(key);
-                    
                     this.redisClient.set("backup_coins", JSON.stringify(resp.data["data"]));
-                                                  
                 })
-
-                
             }).catch(err => {
                 this.redisClient.get("backup_coins" , (err, data) => {
                     if (err) {
@@ -40,7 +36,6 @@ export default class CoinService {
                     }                     
                 })
             });
-    
     }
 
     getCoins() {
@@ -59,7 +54,6 @@ export default class CoinService {
             let prices;
             if (row.length > 0) {
                 const last_updated = row[0].updated_at;
-            
                 const converted_last_updated = new Date(last_updated).getTime();
                 const today = Date.now();
 
@@ -80,9 +74,7 @@ export default class CoinService {
                             prices: prices
                         })
                 }
-
                 return null;  
-                
             } else {
                 return this.knex('coin_history').insert({
                     coin_id: coinId,
@@ -131,7 +123,6 @@ export default class CoinService {
 
     storeCoinPrice(coinId, userId) {
         return this.getPriceById(coinId).then((prices) => {
-            console.log(coinId, userId);
             const key = coinId.toString()+"_"+userId.toString();
             const price = JSON.stringify(prices['prices']["HKD"]["price"]);
             console.log(key);           
