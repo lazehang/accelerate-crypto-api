@@ -1,7 +1,8 @@
 {
-    "name": "crypto",
+    "name": "accelerate-crypto-api",
     "version": "1.0.0",
     "description": "",
+    "repository": "https://github.com/lazehang/accelerate-crypto-api",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
